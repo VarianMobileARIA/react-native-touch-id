@@ -1,23 +1,19 @@
 buildscript {
   repositories {
-    jcenter()
     maven {
       url 'https://maven.google.com/'
       name 'Google'
     }
+    jcenter()
+    google()
   }
 
   dependencies {
-    classpath 'com.android.tools.build:gradle:2.3.+'
+    classpath 'com.android.tools.build:gradle:3.4.2'
   }
 }
 
 apply plugin: 'com.android.library'
-
-// Inspired by rayronvictor's PR #248 tp react-native-config
-// https://github.com/luggit/react-native-config/pull/248
-
-def _ext = rootProject.ext
 
 android {
   compileSdkVersion 26
@@ -39,5 +35,5 @@ repositories {
 }
 
 dependencies {
-  compile project(':ReactAndroid')
+  api "com.facebook.react:react-native:+"
 }

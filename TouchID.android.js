@@ -10,26 +10,30 @@ export default {
         (error, code) => {
           return reject(createError(config, error, code));
         },
-        success => {
-          return resolve(true);
+        (biometryType) => {
+          return resolve(biometryType);
         }
       );
     });
   },
 
   authenticate(reason, config) {
-    DEFAULT_CONFIG = {
+    var DEFAULT_CONFIG = {
       title: 'Authentication Required',
-      color: '#1306ff',
+      imageColor: '#1306ff',
+      imageErrorColor: '#ff0000',
       sensorDescription: 'Touch sensor',
+      sensorErrorDescription: 'Failed',
       cancelText: 'Cancel',
       unifiedErrors: false
     };
     var authReason = reason ? reason : ' ';
     var authConfig = Object.assign({}, DEFAULT_CONFIG, config);
-    var color = processColor(authConfig.color);
+    var imageColor = processColor(authConfig.imageColor);
+    var imageErrorColor = processColor(authConfig.imageErrorColor);
 
-    authConfig.color = color;
+    authConfig.imageColor = imageColor;
+    authConfig.imageErrorColor = imageErrorColor;
 
     return new Promise((resolve, reject) => {
       NativeTouchID.authenticate(

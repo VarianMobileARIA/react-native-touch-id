@@ -1,8 +1,3 @@
-// Inspired by rayronvictor's PR #248 tp react-native-config
-// https://github.com/luggit/react-native-config/pull/248
-
-def _ext = rootProject.ext
-
 buildscript {
   repositories {
     maven {
@@ -19,11 +14,6 @@ buildscript {
 }
 
 apply plugin: 'com.android.library'
-
-// Inspired by rayronvictor's PR #248 tp react-native-config
-// https://github.com/luggit/react-native-config/pull/248
-
-def _ext = rootProject.ext
 
 android {
   compileSdkVersion 26

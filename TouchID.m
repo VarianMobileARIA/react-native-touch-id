@@ -11,19 +11,21 @@ RCT_EXPORT_METHOD(isSupported: (NSDictionary *)options
 {
     LAContext *context = [[LAContext alloc] init];
     NSError *error;
-    
+
     // Check to see if we have a passcode fallback
-    NSNumber *passcodeFallback = [NSNumber numberWithBool:true];
+//     NSNumber *passcodeFallback = [NSNumber numberWithBool:true];
+    Boolean passcodeFallback = false;
+
     if (RCTNilIfNull([options objectForKey:@"passcodeFallback"]) != nil) {
         passcodeFallback = [RCTConvert NSNumber:options[@"passcodeFallback"]];
     }
-    
+
     if ([context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:&error]) {
-        
+
         // No error found, proceed
         callback(@[[NSNull null], [self getBiometryType:context]]);
-    } else if ([passcodeFallback boolValue] && [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthentication error:&error]) {
-        
+//     } else if ([passcodeFallback boolValue] && [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthentication error:&error]) {
+       } else if (passcodeFallback && [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthentication error:&error]) {
         // No error
         callback(@[[NSNull null], [self getBiometryType:context]]);
     }
@@ -32,11 +34,11 @@ RCT_EXPORT_METHOD(isSupported: (NSDictionary *)options
         if (error) {
             NSString *errorReason = [self getErrorReason:error];
             NSLog(@"Authentication failed: %@", errorReason);
-            
+
             callback(@[RCTMakeError(errorReason, nil, nil), [self getBiometryType:context]]);
             return;
         }
-        
+
         callback(@[RCTMakeError(@"RCTTouchIDNotSupported", nil, nil)]);
         return;
     }
@@ -60,7 +62,7 @@ RCT_EXPORT_METHOD(authenticate: (NSString *)reason
     }
 
     // Device has TouchID
-    if ([context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:&error]) {
+    if (!passcodeFallback && [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:&error]) {
         // Attempt Authentification
         [context evaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
                 localizedReason:reason
@@ -70,7 +72,7 @@ RCT_EXPORT_METHOD(authenticate: (NSString *)reason
          }];
 
         // Device does not support TouchID but user wishes to use passcode fallback
-    } else if ([passcodeFallback boolValue] && [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthentication error:&error]) {
+    } else if (passcodeFallback && [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthentication error:&error]) {
         // Attempt Authentification
         [context evaluatePolicy:LAPolicyDeviceOwnerAuthentication
                 localizedReason:reason
@@ -83,11 +85,11 @@ RCT_EXPORT_METHOD(authenticate: (NSString *)reason
         if (error) {
             NSString *errorReason = [self getErrorReason:error];
             NSLog(@"Authentication failed: %@", errorReason);
-            
+
             callback(@[RCTMakeError(errorReason, nil, nil), [self getBiometryType:context]]);
             return;
         }
-        
+
         callback(@[RCTMakeError(@"RCTTouchIDNotSupported", nil, nil)]);
         return;
     }
@@ -108,32 +110,32 @@ RCT_EXPORT_METHOD(authenticate: (NSString *)reason
 - (NSString *)getErrorReason:(NSError *)error
 {
     NSString *errorReason;
-    
+
     switch (error.code) {
         case LAErrorAuthenticationFailed:
             errorReason = @"LAErrorAuthenticationFailed";
             break;
-            
+
         case LAErrorUserCancel:
             errorReason = @"LAErrorUserCancel";
             break;
-            
+
         case LAErrorUserFallback:
             errorReason = @"LAErrorUserFallback";
             break;
-            
+
         case LAErrorSystemCancel:
             errorReason = @"LAErrorSystemCancel";
             break;
-            
+
         case LAErrorPasscodeNotSet:
             errorReason = @"LAErrorPasscodeNotSet";
             break;
-            
+
         case LAErrorTouchIDNotAvailable:
             errorReason = @"LAErrorTouchIDNotAvailable";
             break;
-            
+
         case LAErrorTouchIDNotEnrolled:
             errorReason = @"LAErrorTouchIDNotEnrolled";
             break;
@@ -141,12 +143,12 @@ RCT_EXPORT_METHOD(authenticate: (NSString *)reason
         case LAErrorTouchIDLockout:
             errorReason = @"LAErrorTouchIDLockout";
             break;
-            
+
         default:
             errorReason = @"RCTTouchIDUnknownError";
             break;
     }
-    
+
     return errorReason;
 }
 
@@ -168,3 +170,4 @@ RCT_EXPORT_METHOD(authenticate: (NSString *)reason
 }
 
 @end
+
